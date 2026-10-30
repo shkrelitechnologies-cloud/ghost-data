@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghost Data - Crypto Funding Rates and New Token Launches</title>
+<meta name="description" content="Free auto-updated crypto data: perpetual funding rates and new token launches across 5 chains. Updated every 30 minutes.">
+<style>
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:900px;margin:0 auto;padding:20px}
+h1{font-size:22px} h2{font-size:17px;margin-top:34px;border-bottom:1px solid #30363d;padding-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #21262d}
+th{color:#8b949e;font-weight:600} td.r,th.r{text-align:right}
+.pos{color:#3fb950}.neg{color:#f85149}
+.muted{color:#8b949e;font-size:13px}
+a{color:#58a6ff}
+</style>
+</head>
+<body>
+<h1>Ghost Data</h1>
+<p class="muted">Free crypto data, updated every 30 minutes. Funding rates from OKX, new token pools from GeckoTerminal.</p>
+<p class="muted">Last update: <span id="upd">loading...</span></p>
+<h2>Perpetual Funding Rates (top 30 by volume)</h2>
+<p class="muted">Positive = longs pay shorts. Negative = shorts pay longs.</p>
+<table id="fr"><thead><tr><th>#</th><th>Coin</th><th class="r">Funding % / 8h</th><th class="r">24h Volume</th></tr></thead><tbody></tbody></table>
+<h2>New Token Launches (newest DEX pools, 5 chains)</h2>
+<p class="muted">Brand-new pools. High risk, always do your own research.</p>
+<table id="np"><thead><tr><th>#</th><th>Chain</th><th>Pair</th><th class="r">Price USD</th><th>Pool Created UTC</th><th class="r">Txns 1h</th></tr></thead><tbody></tbody></table>
+<p class="muted" style="margin-top:30px">Data: OKX public API, GeckoTerminal public API. Not financial advice.</p>
+<script>
+function fmtVol(v){if(v>1e9)return (v/1e9).toFixed(1)+'B';if(v>1e6)return (v/1e6).toFixed(1)+'M';if(v>1e3)return (v/1e3).toFixed(0)+'K';return v}
+fetch('data.json?'+Date.now()).then(r=>r.json()).then(d=>{
+  document.getElementById('upd').textContent=d.updated||'?';
+  const fr=document.querySelector('#fr tbody');
+  (d.funding||[]).forEach((r,i)=>{
+    const cls=r.fr<0?'neg':'pos';
+    fr.insertAdjacentHTML('beforeend',`<tr><td>${i+1}</td><td>${r.coin}</td><td class="r ${cls}">${r.fr.toFixed(4)}%</td><td class="r">${fmtVol(r.vol)}</td></tr>`);
+  });
+  const np=document.querySelector('#np tbody');
+  (d.pools||[]).forEach((p,i)=>{
+    np.insertAdjacentHTML('beforeend',`<tr><td>${i+1}</td><td>${p.net}</td><td>${p.pair}</td><td class="r">${p.price?('$'+Number(p.price).toPrecision(3)):''}</td><td>${p.created}</td><td class="r">${p.tx1h}</td></tr>`);
+  });
+}).catch(e=>{document.getElementById('upd').textContent='data not ready yet - first update runs shortly';});
+</script>
+</body>
+</html>
